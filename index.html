@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>WEAR ME — Drop Culture</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,200;0,300;0,400;1,200&family=Space+Mono:ital@0;1&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --white:#f5f4f0;
+  --off:#eceae3;
+  --ink:#0a0a08;
+  --mid:#5a5a52;
+  --lite:#c8c6be;
+  --red:#e63325;
+  --font-display:'Bebas Neue',sans-serif;
+  --font-body:'DM Sans',sans-serif;
+  --font-mono:'Space Mono',monospace;
+}
+html{scroll-behavior:smooth}
+body{
+  background:var(--white);
+  color:var(--ink);
+  font-family:var(--font-body);
+  font-weight:300;
+  cursor:none;
+  overflow-x:hidden;
+}
+
+/* noise grain overlay */
+body::before{
+  content:'';
+  position:fixed;inset:0;z-index:9990;
+  pointer-events:none;
+  opacity:.028;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:160px 160px;
+}
+
+/* ── cursor ── */
+#cur{position:fixed;top:0;left:0;z-index:9999;width:8px;height:8px;background:var(--ink);border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;transition:transform .1s}
+#cur-r{position:fixed;top:0;left:0;z-index:9998;width:32px;height:32px;border:1px solid var(--ink);border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;transition:transform .4s cubic-bezier(.25,.46,.45,.94)}
+body.hovlink #cur{transform:translate(-50%,-50%) scale(3);background:var(--red)}
+body.hovlink #cur-r{opacity:0}
+
+/* ── scroll counter ── */
+#scroll-hud{
+  position:fixed;bottom:28px;left:28px;z-index:800;
+  display:flex;align-items:center;gap:10px;
+  mix-blend-mode:multiply;
+}
+#scroll-bar{width:64px;height:1px;background:var(--lite);position:relative}
+#scroll-fill{height:100%;width:0;background:var(--ink);transition:width .1s}
+#scroll-num{font-family:var(--font-mono);font-size:9px;color:var(--mid);letter-spacing:.08em}
+
+/* ── nav ── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:600;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:22px 36px;
+  background:rgba(245,244,240,0);
+  transition:background .4s,border-color .4s;
+  border-bottom:1px solid transparent;
+}
+nav.scrolled{background:rgba(245,244,240,0.92);backdrop-filter:blur(12px);border-color:var(--lite)}
+.nav-logo{
+  font-family:var(--font-display);
+  font-size:22px;letter-spacing:.12em;
+  color:var(--ink);text-decoration:none;
+  line-height:1;
+}
+.nav-logo sup{font-size:9px;font-family:var(--font-mono);letter-spacing:.05em;color:var(--red);vertical-align:super;margin-left:2px}
+.nav-links{display:flex;gap:32px;list-style:none}
+.nav-links a{
+  font-family:var(--font-mono);font-size:10px;
+  letter-spacing:.15em;text-transform:uppercase;
+  color:var(--mid);text-decoration:none;
+  transition:color .25s;
+}
+.nav-links a:hover{color:var(--red)}
+.nav-tag{
+  font-family:var(--font-mono);font-size:9px;
+  letter-spacing:.12em;color:var(--mid);
+  border:1px solid var(--lite);padding:6px 14px;
+  text-transform:uppercase;cursor:none;
+  transition:background .25s,color .25s,border-color .25s;
+}
+.nav-tag:hover{background:var(--ink);color:var(--white);border-color:var(--ink)}
+
+/* ── HERO ── */
+#hero{
+  min-height:100vh;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  border-bottom:1px solid var(--lite);
+  overflow:hidden;
+}
+.hero-left{
+  display:flex;flex-direction:column;
+  justify-content:flex-end;
+  padding:120px 48px 60px;
+  border-right:1px solid var(--lite);
+  position:relative;
+}
+.hero-issue{
+  font-family:var(--font-mono);font-size:9px;
+  letter-spacing:.3em;text-transform:uppercase;
+  color:var(--mid);margin-bottom:32px;
+}
+.hero-headline{
+  font-family:var(--font-display);
+  font-size:clamp(100px,14vw,200px);
+  line-height:.88;letter-spacing:-.01em;
+  color:var(--ink);
+}
+.hero-headline .stroke{
+  color:transparent;
+  -webkit-text-stroke:1.5px var(--ink);
+}
+.hero-headline .red{color:var(--red)}
+.hero-sub{
+  margin-top:40px;
+  font-size:12px;line-height:1.9;font-weight:300;
+  color:var(--mid);max-width:340px;
+  border-top:1px solid var(--lite);padding-top:28px;
+}
+.hero-actions{
+  margin-top:36px;
+  display:flex;gap:16px;align-items:center;
+}
+.btn-primary{
+  font-family:var(--font-mono);font-size:10px;
+  letter-spacing:.18em;text-transform:uppercase;
+  background:var(--ink);color:var(--white);
+  padding:14px 28px;border:none;cursor:none;
+  transition:background .25s,color .25s;
+}
+.btn-primary:hover{background:var(--red)}
+.btn-ghost{
+  font-family:var(--font-mono);font-size:10px;
+  letter-spacing:.18em;text-transform:uppercase;
+  background:none;color:var(--mid);
+  border:none;cursor:none;
+  display:flex;align-items:center;gap:10px;
+  transition:color .25s;
+}
+.btn-ghost::after{content:'→';transition:transform .25s}
+.btn-ghost:hover{color:var(--ink)}
+.btn-ghost:hover::after{transform:translateX(4px)}
+
+.hero-right{
+  display:flex;flex-direction:column;
+  position:relative;overflow:hidden;
+  background:var(--off);
+}
+/* big animating W */
+.hero-bigw{
+  position:absolute;
+  font-family:var(--font-display);
+  font-size:clamp(260px,38vw,520px);
+  line-height:1;color:transparent;
+  -webkit-text-stroke:1px rgba(10,10,8,0.07);
+  top:50%;left:50%;
+  transform:translate(-55%,-52%);
+  pointer-events:none;user-select:none;
+  animation:floatW 8s ease-in-out infinite;
+}
+@keyframes floatW{
+  0%,100%{transform:translate(-55%,-52%) rotate(-2deg)}
+  50%{transform:translate(-52%,-50%) rotate(1deg)}
+}
+.hero-stats{
+  position:absolute;bottom:48px;left:36px;right:36px;
+  display:flex;justify-content:space-between;
+  border-top:1px solid var(--lite);padding-top:24px;
+}
+.stat-item{}
+.stat-num{
+  font-family:var(--font-display);font-size:36px;
+  line-height:1;color:var(--ink);
+}
+.stat-label{
+  font-family:var(--font-mono);font-size:9px;
+  letter-spacing:.25em;text-transform:uppercase;
+  color:var(--mid);margin-top:4px;
+}
+.hero-drop-tag{
+  position:absolute;top:36px;right:36px;
+  font-family:var(--font-mono);font-size:9px;
+  letter-spacing:.2em;text-transform:uppercase;
+  border:1px solid var(--ink);padding:8px 14px;
+  display:flex;align-items:center;gap:8px;
+}
+.drop-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--red);
+  animation:pulse 1.4s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+
+/* ── MARQUEE ── */
+.marquee-wrap{
+  overflow:hidden;
+  border-bottom:1px solid var(--lite);
+  background:var(--ink);
+  padding:18px 0;
+}
+.marquee-track{
+  display:flex;width:max-content;
+  animation:mq 22s linear infinite;
+}
+.marquee-track:hover{animation-play-state:paused}
+.mq-item{
+  font-family:var(--font-display);
+  font-size:15px;letter-spacing:.25em;
+  text-transform:uppercase;color:var(--white);
+  padding:0 36px;white-space:nowrap;
+}
+.mq-item span{color:var(--red)}
+@keyframes mq{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* ── DROP SECTION ── */
+#drop{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  border-bottom:1px solid var(--lite);
+}
+.drop-header{
+  grid-column:1/-1;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:48px 48px 32px;
+  border-bottom:1px solid var(--lite);
+}
+.drop-title{
+  font-family:var(--font-display);
+  font-size:clamp(42px,5vw,72px);
+  letter-spacing:.04em;
+  line-height:1;
+}
+.drop-meta{
+  font-family:var(--font-mono);font-size:9px;
+  letter-spacing:.25em;text-transform:uppercase;
+  color:var(--mid);text-align:right;line-height:2;
+}
+.drop-card{
+  border-right:1px solid var(--lite);
+  padding:0;overflow:hidden;
+  cursor:none;position:relative;
+}
+.drop-card:last-child{border-right:none}
+.drop-card-img{
+  width:100%;aspect-ratio:3/4;
+  position:relative;overflow:hidden;
+}
+.drop-card-bg{
+  position:absolute;inset:0;
+  transition:transform .7s cubic-bezier(.25,.46,.45,.94);
+}
+.drop-card:hover .drop-card-bg{transform:scale(1.05)}
+.dc-bg1{background:linear-gradient(145deg,#d4cfc6 0%,#b8b3aa 100%)}
+.dc-bg2{background:linear-gradient(145deg,#e0ddd6 0%,#c5c1b8 100%)}
+.dc-bg3{background:linear-gradient(145deg,#cac5bc 0%,#adaaa2 100%)}
+
+/* garment silhouette SVG in each card */
+.garment-svg{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  opacity:.55;
+  transition:opacity .5s,transform .5s;
+}
+.drop-card:hover .garment-svg{opacity:.8;transform:translate(-50%,-54%)}
+
+.dc-badge{
+  position:absolute;top:20px;left:20px;
+  font-family:var(--font-mono);font-size:8px;
+  letter-spacing:.2em;text-transform:uppercase;
+  background:var(--ink);color:var(--white);
+  padding:5px 10px;
+}
+.dc-badge.new{background:var(--red)}
+.drop-card-info{padding:24px 28px 32px}
+.dc-num{
+  font-family:var(--font-mono);font-size:8px;
+  letter-spacing:.3em;color:var(--lite);
+  margin-bottom:10px;
+}
+.dc-name{
+  font-family:var(--font-display);
+  font-size:26px;letter-spacing:.06em;
+  line-height:1.1;margin-bottom:6px;
+}
+.dc-desc{
+  font-size:11px;color:var(--mid);
+  line-height:1.7;font-weight:300;
+}
+.dc-price{
+  font-family:var(--font-mono);font-size:12px;
+  letter-spacing:.1em;margin-top:16px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.dc-add{
+  font-size:9px;letter-spacing:.2em;text-transform:uppercase;
+  border:1px solid var(--lite);padding:7px 14px;
+  cursor:none;transition:all .25s;background:none;font-family:var(--font-mono);
+}
+.dc-add:hover{background:var(--ink);color:var(--white);border-color:var(--ink)}
+
+/* ── EDITORIAL STRIP ── */
+#editorial{
+  display:grid;grid-template-columns:5fr 3fr;
+  min-height:80vh;
+  border-bottom:1px solid var(--lite);
+}
+.ed-visual{
+  background:var(--off);
+  border-right:1px solid var(--lite);
+  position:relative;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+}
+/* large typographic art */
+.ed-type-art{
+  font-family:var(--font-display);
+  font-size:clamp(80px,11vw,160px);
+  line-height:.9;
+  text-align:center;
+  color:transparent;
+  -webkit-text-stroke:1px var(--ink);
+  opacity:.12;
+  user-select:none;pointer-events:none;
+  position:absolute;
+}
+.ed-centre{
+  position:relative;z-index:2;
+  text-align:center;
+}
+.ed-sq{
+  width:clamp(120px,18vw,240px);
+  height:clamp(120px,18vw,240px);
+  border:1px solid var(--ink);
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 24px;
+  position:relative;
+  animation:rotateSq 20s linear infinite;
+}
+@keyframes rotateSq{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.ed-sq-inner{
+  position:absolute;inset:16px;border:1px solid var(--lite);
+  animation:rotateSq 14s linear infinite reverse;
+}
+.ed-sq-label{
+  font-family:var(--font-display);font-size:28px;
+  letter-spacing:.2em;color:var(--ink);
+  animation:rotateSq 20s linear infinite reverse;
+}
+.ed-copy{
+  display:flex;flex-direction:column;
+  justify-content:center;
+  padding:80px 52px;
+}
+.ed-eyebrow{
+  font-family:var(--font-mono);font-size:9px;
+  letter-spacing:.4em;text-transform:uppercase;
+  color:var(--red);margin-bottom:28px;
+}
+.ed-heading{
+  font-family:var(--font-display);
+  font-size:clamp(44px,5vw,72px);
+  line-height:1;letter-spacing:.04em;
+  margin-bottom:28px;
+}
+.ed-heading em{
+  font-style:italic;font-family:'DM Sans',sans-serif;
+  font-weight:200;font-size:.7em;
+  color:var(--mid);display:block;
+  letter-spacing:.08em;
+}
+.ed-body{
+  font-size:13px;line-height:2;
+  color:var(--mid);max-width:320px;
+  margin-bottom:40px;
+}
+.ed-list{
+  list-style:none;
+  border-top:1px solid var(--lite);
+  padding-top:28px;
+}
+.ed-list li{
+  display:flex;align-items:center;gap:14px;
+  font-family:var(--font-mono);font-size:10px;
+  letter-spacing:.18em;text-transform:uppercase;
+  color:var(--mid);padding:12px 0;
+  border-bottom:1px solid var(--lite);
+  transition:color .25s;
+}
+.ed-list li:hover{color:var(--ink)}
+.ed-list li::before{content:'—';color:var(--red);flex-shrink:0}
+
+/* ── DROPS TICKER ── */
+#ticker{
+  background:var(--off);
+  border-bottom:1px solid var(--lite);
+  padding:48px;
+  display:flex;gap:0;
+}
+.ticker-label{
+  writing-mode:vertical-rl;
+  text-orientation:mixed;
+  font-family:var(--font-mono);font-size:9px;
+  letter-spacing:.3em;text-transform:uppercase;
+  color:var(--lite);margin-right:48px;
+  border-right:1px solid var(--lite);
+  padding-right:24px;
+}
+.ticker-drops{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:32px;flex:1;
+}
+.td-item{
+  display:flex;flex-direction:column;gap:10px;
+  padding-bottom:24px;
+  border-bottom:1px solid var(--lite);
+  cursor:none;
+  transition:opacity .3s;
+}
+.td-item:hover{opacity:.7}
+.td-date{
+  font-family:var(--font-mono);font-size:9px;
+  letter-spacing:.2em;color:var(--lite);
+}
+.td-name{
+  font-family:var(--font-display);
+  font-size:20px;letter-spacing:.06em;
+  line-height:1.1;
+}
+.td-tag{
+  font-family:var(--font-mono);font-size:8px;
+  letter-spacing:.25em;text-transform:uppercase;
+  color:var(--white);background:var(--ink);
+  padding:3px 8px;width:fit-content;
+}
+.td-tag.soon{background:var(--red)}
+
+/* ── FOOTER ── */
+footer{
+  background:var(--ink);
+  color:var(--white);
+  padding:80px 48px 48px;
+}
+.footer-top{
+  display:grid;grid-template-columns:2fr 1fr 1fr 1fr;
+  gap:48px;border-bottom:1px solid rgba(255,255,255,0.1);
+  padding-bottom:64px;margin-bottom:40px;
+}
+.footer-brand-name{
+  font-family:var(--font-display);
+  font-size:56px;letter-spacing:.08em;
+  line-height:1;color:var(--white);
+  margin-bottom:16px;
+}
+.footer-brand-name span{color:var(--red)}
+.footer-tagline{
+  font-size:12px;color:rgba(255,255,255,0.4);
+  line-height:1.9;max-width:240px;
+}
+.footer-col-head{
+  font-family:var(--font-mono);font-size:9px;
+  letter-spacing:.4em;text-transform:uppercase;
+  color:rgba(255,255,255,0.35);margin-bottom:24px;
+}
+.footer-col ul{list-style:none;display:flex;flex-direction:column;gap:14px}
+.footer-col ul a{
+  font-family:var(--font-display);font-size:17px;
+  letter-spacing:.08em;text-transform:uppercase;
+  color:rgba(255,255,255,0.75);text-decoration:none;
+  display:flex;align-items:center;gap:0;
+  transition:color .25s,gap .25s;
+}
+.footer-col ul a::before{content:'';display:block;width:0;height:1px;background:var(--red);transition:width .3s;margin-right:0}
+.footer-col ul a:hover{color:var(--white)}
+.footer-col ul a:hover::before{width:16px;margin-right:8px}
+.footer-bottom{
+  display:flex;align-items:center;justify-content:space-between;
+}
+.footer-copy{
+  font-family:var(--font-mono);font-size:9px;
+  letter-spacing:.25em;color:rgba(255,255,255,0.25);
+  text-transform:uppercase;
+}
+.footer-socials{display:flex;gap:20px}
+.footer-socials a{
+  font-family:var(--font-mono);font-size:9px;
+  letter-spacing:.25em;text-transform:uppercase;
+  color:rgba(255,255,255,0.35);text-decoration:none;
+  transition:color .25s;
+}
+.footer-socials a:hover{color:var(--red)}
+
+/* ── REVEAL ── */
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .8s ease,transform .8s ease}
+.reveal.in{opacity:1;transform:none}
+.reveal-left{opacity:0;transform:translateX(-28px);transition:opacity .8s ease,transform .8s ease}
+.reveal-left.in{opacity:1;transform:none}
+
+/* ── RESPONSIVE ── */
+@media(max-width:960px){
+  #hero{grid-template-columns:1fr}
+  .hero-right{display:none}
+  #drop{grid-template-columns:1fr 1fr}
+  #editorial{grid-template-columns:1fr}
+  .ed-visual{min-height:50vh}
+  .ticker-drops{grid-template-columns:1fr 1fr}
+  .footer-top{grid-template-columns:1fr 1fr}
+  nav{padding:18px 20px}
+  .nav-links{display:none}
+}
+@media(max-width:600px){
+  #drop{grid-template-columns:1fr}
+  .ticker-drops{grid-template-columns:1fr}
+  .footer-top{grid-template-columns:1fr}
+  .footer-bottom{flex-direction:column;gap:16px;text-align:center}
+  #ticker{padding:32px 24px;flex-direction:column}
+  .ticker-label{writing-mode:horizontal-tb;border-right:none;border-bottom:1px solid var(--lite);padding-bottom:16px;margin-right:0;margin-bottom:24px}
+  #hero .hero-left{padding:100px 28px 48px}
+  #drop .drop-header,#editorial .ed-copy{padding:40px 28px}
+  footer{padding:60px 24px 36px}
+}
+</style>
+</head>
+<body>
+
+<div id="cur"></div>
+<div id="cur-r"></div>
+
+<div id="scroll-hud">
+  <div id="scroll-bar"><div id="scroll-fill"></div></div>
+  <span id="scroll-num">00</span>
+</div>
+
+<!-- NAV -->
+<nav id="main-nav">
+  <a href="#" class="nav-logo">WEAR ME<sup>™</sup></a>
+  <ul class="nav-links">
+    <li><a href="#">Drops</a></li>
+    <li><a href="#">Editorial</a></li>
+    <li><a href="#">Archive</a></li>
+    <li><a href="#">About</a></li>
+  </ul>
+  <button class="nav-tag">Shop Now</button>
+</nav>
+
+<!-- ══ HERO ══ -->
+<section id="hero">
+  <div class="hero-left">
+    <p class="hero-issue">Issue 001 &nbsp;·&nbsp; SS26 Drop Season</p>
+    <h1 class="hero-headline">
+      <span>WE</span><br>
+      <span class="stroke">AR</span><br>
+      <span class="red">ME</span>
+    </h1>
+    <p class="hero-sub">
+      Not a brand. A statement. Wear Me is built for those who dress with intent — 
+      where every piece is a drop, every drop is a moment.
+    </p>
+    <div class="hero-actions">
+      <button class="btn-primary">See the Drop</button>
+      <button class="btn-ghost">Our Story</button>
+    </div>
+  </div>
+
+  <div class="hero-right">
+    <div class="hero-drop-tag"><span class="drop-dot"></span>Drop 001 · Live Now</div>
+    <div class="hero-bigw">W</div>
+    <div class="hero-stats">
+      <div class="stat-item">
+        <div class="stat-num">001</div>
+        <div class="stat-label">Current Drop</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">48H</div>
+        <div class="stat-label">Window Only</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">12</div>
+        <div class="stat-label">Pieces Left</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ MARQUEE ══ -->
+<div class="marquee-wrap">
+  <div class="marquee-track">
+    <span class="mq-item">Drop Culture <span>✦</span></span>
+    <span class="mq-item">Wear Me SS25 <span>✦</span></span>
+    <span class="mq-item">Limited Drops <span>✦</span></span>
+    <span class="mq-item">No Restocks <span>✦</span></span>
+    <span class="mq-item">Wear With Intent <span>✦</span></span>
+    <span class="mq-item">Oversized Fits <span>✦</span></span>
+    <span class="mq-item">Unisex <span>✦</span></span>
+    <span class="mq-item">Urban · Raw · Real <span>✦</span></span>
+    <span class="mq-item">Drop Culture <span>✦</span></span>
+    <span class="mq-item">Wear Me SS25 <span>✦</span></span>
+    <span class="mq-item">Limited Drops <span>✦</span></span>
+    <span class="mq-item">No Restocks <span>✦</span></span>
+    <span class="mq-item">Wear With Intent <span>✦</span></span>
+    <span class="mq-item">Oversized Fits <span>✦</span></span>
+    <span class="mq-item">Unisex <span>✦</span></span>
+    <span class="mq-item">Urban · Raw · Real <span>✦</span></span>
+  </div>
+</div>
+
+<!-- ══ DROP SECTION ══ -->
+<section id="drop">
+  <div class="drop-header reveal">
+    <h2 class="drop-title">Drop<br>001</h2>
+    <div class="drop-meta">
+      SS26 Season<br>
+      48-Hour Window<br>
+      <span style="color:var(--red)">Closing Soon</span>
+    </div>
+  </div>
+
+  <!-- Card 1 -->
+  <div class="drop-card reveal">
+    <div class="drop-card-img">
+      <div class="drop-card-bg dc-bg1"></div>
+      <svg class="garment-svg" width="160" height="200" viewBox="0 0 160 200" fill="none" stroke="rgba(10,10,8,0.5)" stroke-width="1">
+        <!-- hoodie silhouette -->
+        <path d="M50,30 Q30,28 18,50 L10,90 L38,92 L38,180 L122,180 L122,92 L150,90 L142,50 Q130,28 110,30 Q100,10 80,8 Q60,10 50,30Z"/>
+        <path d="M50,30 Q60,55 80,58 Q100,55 110,30"/>
+        <path d="M10,90 Q24,88 38,92"/>
+        <path d="M122,92 Q136,88 150,90"/>
+        <path d="M38,140 L122,140" stroke-opacity=".3"/>
+        <ellipse cx="80" cy="70" rx="12" ry="8" stroke-opacity=".4"/>
+      </svg>
+      <div class="dc-badge new">New</div>
+    </div>
+    <div class="drop-card-info">
+      <p class="dc-num">WM-001-01</p>
+      <h3 class="dc-name">Void Hoodie</h3>
+      <p class="dc-desc">500gsm oversized fleece. Dropped shoulder. No logo — just texture.</p>
+      <div class="dc-price">
+        <button class="dc-add">Add to Bag</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 2 -->
+  <div class="drop-card reveal">
+    <div class="drop-card-img">
+      <div class="drop-card-bg dc-bg2"></div>
+      <svg class="garment-svg" width="140" height="190" viewBox="0 0 140 190" fill="none" stroke="rgba(10,10,8,0.5)" stroke-width="1">
+        <!-- cargo pants silhouette -->
+        <path d="M35,10 L20,10 L15,100 L10,185 L55,185 L65,95 L75,185 L120,185 L120,10 L105,10"/>
+        <path d="M35,10 Q55,18 70,18 Q85,18 105,10"/>
+        <rect x="12" y="45" width="22" height="16" rx="1" stroke-opacity=".5"/>
+        <rect x="106" y="45" width="22" height="16" rx="1" stroke-opacity=".5"/>
+        <path d="M15,100 L120,100" stroke-opacity=".3"/>
+      </svg>
+      <div class="dc-badge">Only 8 Left</div>
+    </div>
+    <div class="drop-card-info">
+      <p class="dc-num">WM-001-02</p>
+      <h3 class="dc-name">6 Pocket Cargo</h3>
+      <p class="dc-desc">Ripstop cotton. Tapered but roomy. Built to move, built to last.</p>
+      <div class="dc-price">
+        <button class="dc-add">Add to Bag</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 3 -->
+  <div class="drop-card reveal">
+    <div class="drop-card-img">
+      <div class="drop-card-bg dc-bg3"></div>
+      <svg class="garment-svg" width="150" height="180" viewBox="0 0 150 180" fill="none" stroke="rgba(10,10,8,0.5)" stroke-width="1">
+        <!-- bomber / jacket silhouette -->
+        <path d="M45,15 Q30,14 18,38 L8,80 L38,85 L38,165 L112,165 L112,85 L142,80 L132,38 Q120,14 105,15 Q95,5 75,5 Q55,5 45,15Z"/>
+        <path d="M45,15 L55,50 L75,54 L95,50 L105,15"/>
+        <path d="M75,54 L75,165" stroke-opacity=".3"/>
+        <path d="M8,80 Q23,82 38,85"/>
+        <path d="M112,85 Q127,82 142,80"/>
+        <line x1="38" y1="120" x2="75" y2="120" stroke-opacity=".3"/>
+        <line x1="75" y1="120" x2="112" y2="120" stroke-opacity=".3"/>
+      </svg>
+      <div class="dc-badge">Fan Fav</div>
+    </div>
+    <div class="drop-card-info">
+      <p class="dc-num">WM-001-03</p>
+      <h3 class="dc-name">Liner Bomber</h3>
+      <p class="dc-desc">Reversible. Satin shell, fleece lining. Wears both ways, every season.</p>
+      <div class="dc-price">
+        <button class="dc-add">Add to Bag</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ EDITORIAL ══ -->
+<section id="editorial">
+  <div class="ed-visual reveal-left">
+    <div class="ed-type-art">WEAR<br>ME<br>NOW</div>
+    <div class="ed-centre">
+      <div class="ed-sq">
+        <div class="ed-sq-inner"></div>
+        <span class="ed-sq-label">WM</span>
+      </div>
+      <p style="font-family:var(--font-mono);font-size:9px;letter-spacing:.3em;color:var(--mid);text-transform:uppercase">Drop Philosophy</p>
+    </div>
+  </div>
+
+  <div class="ed-copy reveal">
+    <p class="ed-eyebrow">How We Drop</p>
+    <h2 class="ed-heading">
+      NO HYPE.<br>
+      JUST DROP.
+      <em>— Our Manifesto</em>
+    </h2>
+    <p class="ed-body">
+      Every piece released in a 48-hour window. No pre-order. No restock. 
+      You either catch it or you don't. That's not scarcity for hype — 
+      that's intentional design for a world drowning in stuff.
+    </p>
+    <ul class="ed-list">
+      <li>48-Hour Drop Windows Only</li>
+      <li>Zero Restocks — Ever</li>
+      <li>Each Drop, 3 Pieces Max</li>
+      <li>No Ads. Community First</li>
+      <li>100% Carbon-Offset Shipping</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ══ UPCOMING DROPS ══ -->
+<section id="ticker">
+  <div class="ticker-label">Upcoming</div>
+  <div class="ticker-drops reveal">
+
+    <div class="td-item">
+      <span class="td-date">05 Dec 2026</span>
+      <h3 class="td-name">Drop 001<br>Washed Series</h3>
+      <span class="td-tag soon">Coming Soon</span>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+  <div class="footer-top reveal">
+    <div>
+      <div class="footer-brand-name">WEAR<br><span>ME</span></div>
+      <p class="footer-tagline">Drop culture for those who dress with intent. No noise. Just the drop.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-col-head">Shop</p>
+      <ul>
+        <li><a href="#">Current Drop</a></li>
+        <li><a href="#">Archive</a></li>
+        <li><a href="#">Bespoke</a></li>
+        <li><a href="#">Gift Cards</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-col-head">Connect</p>
+      <ul>
+        <li><a href="#">Join Drop List</a></li>
+        <li><a href="#">Instagram</a></li>
+        <li><a href="#">Size Guide</a></li>
+        <li><a href="#">Contact Us</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-col-head">Info</p>
+      <ul>
+        <li><a href="#">About Wear Me</a></li>
+        <li><a href="#">Sustainability</a></li>
+        <li><a href="#">Returns Policy</a></li>
+        <li><a href="#">Legal</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p class="footer-copy">© 2026 Wear Me™ · All Rights Reserved</p>
+    <div class="footer-socials">
+      <a href="#">Instagram</a>
+      <a href="#">Twitter</a>
+      <a href="#">Pinterest</a>
+      <a href="#">WhatsApp</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* cursor */
+const cur=document.getElementById('cur'),curR=document.getElementById('cur-r');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY});
+const links=[...document.querySelectorAll('a,button')];
+links.forEach(el=>{
+  el.addEventListener('mouseenter',()=>document.body.classList.add('hovlink'));
+  el.addEventListener('mouseleave',()=>document.body.classList.remove('hovlink'));
+});
+(function animC(){
+  cur.style.left=mx+'px';cur.style.top=my+'px';
+  rx+=(mx-rx)*.1;ry+=(my-ry)*.1;
+  curR.style.left=rx+'px';curR.style.top=ry+'px';
+  requestAnimationFrame(animC);
+})();
+
+/* scroll */
+const fill=document.getElementById('scroll-fill'),num=document.getElementById('scroll-num'),nav=document.getElementById('main-nav');
+window.addEventListener('scroll',()=>{
+  const p=window.scrollY/(document.body.scrollHeight-window.innerHeight);
+  fill.style.width=(p*100)+'%';
+  num.textContent=String(Math.round(p*100)).padStart(2,'0');
+  nav.classList.toggle('scrolled',window.scrollY>60);
+});
+
+/* reveal */
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in')});
+},{threshold:.12});
+document.querySelectorAll('.reveal,.reveal-left').forEach(el=>obs.observe(el));
+</script>
+</body>
+</html>
